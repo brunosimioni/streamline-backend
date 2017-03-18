@@ -1,0 +1,61 @@
+version: '2'
+services:
+
+  rabbitmq:
+    image: rabbitmq:3.5.3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+     
+  mongodb:
+    image: mongo:3.0.4
+    ports:
+      - "27017:27017"
+    command: mongod --smallfiles
+    
+## BACKEND
+
+  pdi-api:
+    image: java:openjdk-8u91-jdk
+    working_dir: /app
+    volumes:
+      - ./pdi-api/target:/app
+      - ./scripts:/scripts
+      - ./newrelic:/newrelic
+    command: /scripts/run-spring-boot.sh 90 pdi-api.jar pdi-api.yml
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://localhost:8000
+      SPRING_PROFILES_ACTIVE: docker-compose
+      NEW_RELIC_LICENSE_KEY: ${NRLK}
+    ports:
+      - "9000:8080"
+
+  pdi-crawler:
+    image: java:openjdk-8u91-jdk
+    working_dir: /app
+    volumes:
+      - ./pdi-api/target:/app
+      - ./scripts:/scripts
+      - ./newrelic:/newrelic
+    command: /scripts/run-spring-boot.sh 90 pdi-crawler.jar pdi-crawler.yml
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://localhost:8000
+      SPRING_PROFILES_ACTIVE: docker-compose
+      NEW_RELIC_LICENSE_KEY: ${NRLK}
+    ports:
+      - "9001:8080"
+      
+  pdi-ondemand:
+    image: java:openjdk-8u91-jdk
+    working_dir: /app
+    volumes:
+      - ./pdi-api/target:/app
+      - ./scripts:/scripts
+      - ./newrelic:/newrelic
+    command: /scripts/run-spring-boot.sh 90 pdi-ondemand.jar pdi-ondemand.yml
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://localhost:8000
+      SPRING_PROFILES_ACTIVE: docker-compose
+      NEW_RELIC_LICENSE_KEY: ${NRLK}
+    ports:
+      - "9002:8080"
