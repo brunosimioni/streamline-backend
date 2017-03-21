@@ -1,61 +1,57 @@
 version: '2'
 services:
 
-  rabbitmq:
-    image: rabbitmq:3.5.3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-     
-  mongodb:
-    image: mongo:3.0.4
-    ports:
-      - "27017:27017"
-    command: mongod --smallfiles
-    
-## BACKEND
-
-  pdi-api:
+  pdiapi-service:
     image: java:openjdk-8u91-jdk
     working_dir: /app
     volumes:
-      - ./pdi-api/target:/app
+      - ./pdiapi-service/target:/app
       - ./scripts:/scripts
       - ./newrelic:/newrelic
-    command: /scripts/run-spring-boot.sh 90 pdi-api.jar pdi-api.yml
+    command: /scripts/run-spring-boot.sh 128 pdiapi-service.jar nr-pdiapi-service.yml
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://localhost:8000
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8080
       SPRING_PROFILES_ACTIVE: docker-compose
       NEW_RELIC_LICENSE_KEY: ${NRLK}
     ports:
-      - "9000:8080"
+      - "8080"
+    labels:
+        - "interlock.hostname=pdiapi-service"
+        - "interlock.domain=streamline"
 
-  pdi-crawler:
+  pdicrawler-service:
     image: java:openjdk-8u91-jdk
     working_dir: /app
     volumes:
-      - ./pdi-api/target:/app
+      - ./pdicrawler-service/target:/app
       - ./scripts:/scripts
       - ./newrelic:/newrelic
-    command: /scripts/run-spring-boot.sh 90 pdi-crawler.jar pdi-crawler.yml
+    command: /scripts/run-spring-boot.sh 128 pdicrawler-service.jar nr-pdicrawler-service.yml
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://localhost:8000
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8080
       SPRING_PROFILES_ACTIVE: docker-compose
       NEW_RELIC_LICENSE_KEY: ${NRLK}
     ports:
-      - "9001:8080"
+      - "8080"
+    labels:
+        - "interlock.hostname=pdicrawler-service"
+        - "interlock.domain=streamline"
       
-  pdi-ondemand:
+  pdiondemand-service:
     image: java:openjdk-8u91-jdk
     working_dir: /app
     volumes:
-      - ./pdi-api/target:/app
+      - ./pdiondemand-service/target:/app
       - ./scripts:/scripts
       - ./newrelic:/newrelic
-    command: /scripts/run-spring-boot.sh 90 pdi-ondemand.jar pdi-ondemand.yml
+    command: /scripts/run-spring-boot.sh 128 pdiondemand-service.jar nr-pdiondemand-service.yml
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://localhost:8000
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8080
       SPRING_PROFILES_ACTIVE: docker-compose
       NEW_RELIC_LICENSE_KEY: ${NRLK}
     ports:
-      - "9002:8080"
+      - "8080"
+    labels:
+      - "interlock.hostname=pdiondemand-service"
+      - "interlock.domain=streamline"
+

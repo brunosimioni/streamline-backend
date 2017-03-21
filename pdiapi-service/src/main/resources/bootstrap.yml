@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: pdiapi-service
+  cloud:
+    config:
+     uri: http://config-service.streamline
+  profiles:
+    active: local
